@@ -16,8 +16,8 @@ const Color BOARD_LIGHT_COLOR = RGB(200, 190, 160);
 
 const Color PLAYER_ONE_COLOR = RED;
 const Color PLAYER_TWO_COLOR = BLACK;
-//const char* filename2= "/home/roughiz/MyGit/psp-game/pspcheckers-code/image/c1.png";
-//Image* PLAYER_ONE_IMAGE =  loadImage(filename2);
+const Color CROWN_COLOR = WHITE;
+
 const Color SELECTION_COLOR = BLUE;
 const Color SELECTED_COLOR = GREEN;
 

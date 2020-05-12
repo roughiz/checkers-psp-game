@@ -152,14 +152,12 @@ void Checkers::DrawBoard() {
 				else if (boardData[j][i].piece == PIECE_PLAYER_TWO) {
 					drawFilledCircle(offsetX, offsetY, (PIECE_WIDTH / 2), PLAYER_TWO_COLOR);
 				}
-
-				/*
 				else if (boardData[j][i].piece == PIECE_PLAYER_ONE_KING) {
-					drawFilledCircle(offsetX, offsetY, (PIECE_WIDTH / 2), PLAYER_TWO_COLOR);
+					drawFilledCircleCrown(offsetX, offsetY, (PIECE_WIDTH / 2), PLAYER_ONE_COLOR, CROWN_COLOR);
 				}
-				else if (boardData[j][i].piece == PIECE_PLAYER_TWO) {
-					drawFilledCircle(offsetX, offsetY, (PIECE_WIDTH / 2), PLAYER_TWO_COLOR);
-				}*/
+				else if (boardData[j][i].piece == PIECE_PLAYER_TWO_KING) {
+					drawFilledCircleCrown(offsetX, offsetY, (PIECE_WIDTH / 2), PLAYER_TWO_COLOR, CROWN_COLOR);
+				}
 				else {
 					printTextCenter("Unkown Piece", RED);	
 				}
@@ -491,9 +489,19 @@ void Checkers::Remove_trace(int prev_colm, int prev_row, int selectedCol, int se
 
 //move a piece
 void Checkers::Make_move(int prev_colm, int prev_row, int selectedCol, int selectedRow, checkerPiece piece){
+  // verify if piece become crown
+  if (selectedCol == 0 || selectedCol == 7){
+  	if (selectedCol == 7 && piece == PIECE_PLAYER_ONE)
+  		boardData[selectedCol][selectedRow].piece = PIECE_PLAYER_ONE_KING;
+  	if (selectedCol == 0 && piece == PIECE_PLAYER_TWO)
+  		boardData[selectedCol][selectedRow].piece = PIECE_PLAYER_TWO_KING;
+  }else
+  {
+    boardData[selectedCol][selectedRow].piece= piece;	
+  }
   //previous del piece
   boardData[prev_colm][prev_row].piece= PIECE_NONE;
-  boardData[selectedCol][selectedRow].piece= piece;
+  
 
 }
 

@@ -594,6 +594,19 @@ void drawFilledCircle(int x, int y, int r, Color color)
 	}
 }
 
+void drawFilledCircleCrown(int x, int y, int r, Color color1, Color color2)
+{
+	int hr=r/2;
+	Color color = color1;
+	while(r > 0) {
+		if(r == hr)
+			color = color2;
+		drawCircle(x, y, r, color);
+		r--;
+	}
+}
+
+
 
 #define BUF_WIDTH (512)
 #define SCR_WIDTH (480)

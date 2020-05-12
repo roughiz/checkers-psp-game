@@ -362,6 +362,17 @@ void drawCircle(int x, int y, int r, Color color);
 void drawFilledCircle(int x, int y, int r, Color color);
 
 /**
+ * Draw a filled circle to screen.
+ *
+ * @param centerx - x position
+ * @param centery - y position
+ * @param mma - radius
+ * @param color - color1
+ * @param color - color2
+ */
+void drawFilledCircleCrown(int x, int y, int r, Color color1, Color color2);
+
+/**
  * Get the current draw buffer for fast unchecked access.
  *
  * @return the start address of the current draw buffer
