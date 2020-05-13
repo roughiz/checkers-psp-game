@@ -47,6 +47,7 @@ struct boardSquare {
 	bool selected; // selected or not
 	signed int moveSelection; // selection number, defaults to -1
 	loc coords;
+	bool isCrowd=false;
 };
 
 class Checkers {
@@ -80,6 +81,9 @@ private:
 	
 	int selectionTotal;
 	loc selections[32];
+
+	int possibleSelectTotal;
+    loc possibleSelections[32];
 	
 	bool playersTurn;
 	
@@ -93,11 +97,15 @@ private:
 	bool IsValidSelection(void);
 	bool HasMove(void);
 	bool AvailableFromPreviousJump(void);
-	bool AvailableFromMove(void);
+	bool AvailableFromMove(int pcol, int prow, checkerPiece current_piece);
 	void Make_move(int prev_colm, int prev_row, int selectedCol, int selectedRow, checkerPiece piece);
 	void Remove_trace(int prev_colm, int prev_row, int selectedCol, int selectedRow);
 	void Pass_theHand();
+	bool CanSimplyMove();
+	void CanBeMovedToSelectedSquare(int col, int row);
 	bool IStillPieceToEatForPOne(checkerPiece piece);
+	void DelPreviousSelectedSquare();
+	void UpdateNewSelection();
 	checkerPiece GetSquare(signed int col, signed int row);
 	loc GetLoc(signed int c, signed int r);
 	

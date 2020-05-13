@@ -239,6 +239,7 @@ void Checkers::StartFreshGame() { //initialise the board with collors and where 
 	
 	boardData[selectedCol][selectedRow].selected = true;
 	selectionTotal = 0;
+	possibleSelectTotal= 0;
 }
 
 void Checkers::DrawPlayerOneHud() {
@@ -266,7 +267,14 @@ checkerPiece Checkers::GetSquare(signed int col, signed int row) {
 	}
 }
 
-bool Checkers::HasMove() {
+void Checkers::CanBeMovedToSelectedSquare(int col, int row){
+	boardData[col][row].moveSelection = possibleSelectTotal + 1;
+	possibleSelections[possibleSelectTotal].row = row; 
+	possibleSelections[possibleSelectTotal].col = col; 
+	possibleSelectTotal++;
+}
+
+bool Checkers::CanSimplyMove() {
 	int player_road;
 	checkerPiece ennemi;
 	if (curretPlayer == 0) { // PlayerOne set
@@ -276,9 +284,58 @@ bool Checkers::HasMove() {
 		player_road=-1;
         ennemi= PIECE_PLAYER_ONE;
 	} 
+
+	// verify the case when the piece is crown
+	if(boardData[selectedCol][selectedRow].isCrowd){
+	  // verify any left and up move 
+	  int j=selectedRow-1;
+      for(int i=selectedCol-1;i>=0;i--){
+      	if(j<0)
+      		break;
+	    if (GetSquare(i, j) == PIECE_NONE) { // up and left
+            return true;
+	    }else
+	        break;
+	    --j;    
+	  }
+	  // verify any left and dow move 
+	  j=selectedRow+1;
+      for(int i=selectedCol-1;i>=0;i--){
+      	if(j>7)
+      		break;
+	    if (GetSquare(i, j) == PIECE_NONE) { // up and left
+            return true;
+	    }else
+	        break;
+	    ++j;    
+	  }
+	  // verify any right move up
+	  j=selectedRow-1;
+      for(int i=selectedCol+1;i<=7;i++){
+      	if(j<0)
+      		break;
+	    if (GetSquare(i, j) == PIECE_NONE) { // up and left
+            return true;
+	    }else
+	        break;
+	    --j;    
+	  }
+	  // verify any right and dow move 
+	  j=selectedRow+1;
+      for(int i=selectedCol+1;i<=7;i++){
+      	if(j>7)
+      		break;
+	    if (GetSquare(i, j) == PIECE_NONE) { // up and left
+            return true;
+	    }else
+	        break;
+	    ++j;    
+	  }
+
+    }
     //basic moves
 	if (GetSquare(selectedCol+(1*player_road), selectedRow-1) == PIECE_NONE) { // up and left
-		return true;	
+        return true;
 	}
 	if (GetSquare(selectedCol+(1*player_road), selectedRow+1) == PIECE_NONE) { // up and right
 		return true;
@@ -287,15 +344,107 @@ bool Checkers::HasMove() {
 	//skip moves
 	if (GetSquare(selectedCol+(1*player_road), selectedRow-1) == ennemi) { // possible up and left skip
 		if (GetSquare(selectedCol+(2*player_road), selectedRow-2) == PIECE_NONE) { // empty place after skip
-			return true;
+		  return true;
 		}
 	}
 	if (GetSquare(selectedCol+(1*player_road), selectedRow+1) == ennemi) { // possible up and right skip
 		if (GetSquare(selectedCol+(2*player_road), selectedRow+2) == PIECE_NONE) { // empty place after skip
-			return true;
+		  return true;
 		}
 	}
 	return false;
+}
+
+bool Checkers::HasMove() {
+	int player_road, can_move=0;
+	checkerPiece ennemi;
+	if (curretPlayer == 0) { // PlayerOne set
+        player_road=1;
+        ennemi= PIECE_PLAYER_TWO;
+	}else{
+		player_road=-1;
+        ennemi= PIECE_PLAYER_ONE;
+	} 
+	// verify the case when the piece is crown
+	if(boardData[selectedCol][selectedRow].isCrowd){
+	  // verify any left and up move 
+	  int j=selectedRow-1;
+      for(int i=selectedCol-1;i>=0;i--){
+      	if(j<0)
+      		break;
+	    if (GetSquare(i, j) == PIECE_NONE) { // up and left
+            CanBeMovedToSelectedSquare(i,j);
+            can_move++;
+	    }else
+	        break;
+	    --j;    
+	  }
+	  // verify any left and dow move 
+	  j=selectedRow+1;
+      for(int i=selectedCol-1;i>=0;i--){
+      	if(j>7)
+      		break;
+	    if (GetSquare(i, j) == PIECE_NONE) { // up and left
+            CanBeMovedToSelectedSquare(i,j);
+            can_move++;
+	    }else
+	        break;
+	    ++j;    
+	  }
+	  // verify any right move up
+	  j=selectedRow-1;
+      for(int i=selectedCol+1;i<=7;i++){
+      	if(j<0)
+      		break;
+	    if (GetSquare(i, j) == PIECE_NONE) { // up and left
+            CanBeMovedToSelectedSquare(i,j);
+            can_move++;
+	    }else
+	        break;
+	    --j;    
+	  }
+	  // verify any right and dow move 
+	  j=selectedRow+1;
+      for(int i=selectedCol+1;i<=7;i++){
+      	if(j>7)
+      		break;
+	    if (GetSquare(i, j) == PIECE_NONE) { // up and left
+            CanBeMovedToSelectedSquare(i,j);
+            can_move++;
+	    }else
+	        break;
+	    ++j;    
+	  }
+
+    }
+
+    //basic moves
+	if (GetSquare(selectedCol+(1*player_road), selectedRow-1) == PIECE_NONE) { // up and left
+        CanBeMovedToSelectedSquare(selectedCol+(1*player_road), selectedRow-1);
+        can_move++;
+	}
+	if (GetSquare(selectedCol+(1*player_road), selectedRow+1) == PIECE_NONE) { // up and right
+		CanBeMovedToSelectedSquare(selectedCol+(1*player_road), selectedRow+1);
+        can_move++;
+	}
+	
+	//skip moves
+	if (GetSquare(selectedCol+(1*player_road), selectedRow-1) == ennemi) { // possible up and left skip
+		if (GetSquare(selectedCol+(2*player_road), selectedRow-2) == PIECE_NONE) { // empty place after skip
+		CanBeMovedToSelectedSquare(selectedCol+(2*player_road),selectedRow-2);
+        can_move++;
+		}
+	}
+	if (GetSquare(selectedCol+(1*player_road), selectedRow+1) == ennemi) { // possible up and right skip
+		if (GetSquare(selectedCol+(2*player_road), selectedRow+2) == PIECE_NONE) { // empty place after skip
+		CanBeMovedToSelectedSquare(selectedCol+(2*player_road),selectedRow+2);
+        can_move++;
+		}
+	}
+	if(can_move> 0)
+	  return true;
+	else
+		return false;
 }
 
 
@@ -353,17 +502,22 @@ loc Checkers::GetLoc(signed int c, signed int r) {
 	return tl;
 }	
 
-bool Checkers::AvailableFromMove() {
+bool Checkers::AvailableFromMove(int pcol, int prow, checkerPiece current_piece) {
 	int player_road;
-	checkerPiece current_piece;
 	if (curretPlayer == 0) { // PlayerOne set
         player_road=1;
-        current_piece =PIECE_PLAYER_ONE;
 	}else{
 		player_road=-1;
-        current_piece =PIECE_PLAYER_TWO;
 	}
 	if (boardData[selectedCol][selectedRow].piece == PIECE_NONE) {
+		// check special crown move
+        if(boardData[pcol][prow].isCrowd){
+        	for (int i=0;i<possibleSelectTotal;i++){
+        		if ( selectedCol == possibleSelections[i].col && selectedRow == possibleSelections[i].row)
+        			return true;
+            }
+            return false;
+        }
 		//check column
 		if ((boardData[selectedCol][selectedRow].col-(1*player_road)) == selections[selectionTotal-1].col) {   // cas de déplacement par 1 player One 
 			if (boardData[selectedCol][selectedRow].row == selections[selectionTotal-1].row-1) { // deplacemet de 1 vers le haut   
@@ -412,6 +566,18 @@ bool Checkers::IStillPieceToEatForPOne(checkerPiece piece){
 	 }
 	return false;
 }
+
+void Checkers::UpdateNewSelection(){
+	boardData[selectedCol][selectedRow].moveSelection = boardData[selections[selectionTotal-1].col][selections[selectionTotal-1].row].moveSelection;
+	boardData[selections[selectionTotal-1].col][selections[selectionTotal-1].row].moveSelection = -1;
+	selections[selectionTotal-1].col = selectedCol;
+	selections[selectionTotal-1].row = selectedRow;
+	// del previos selected square
+	DelPreviousSelectedSquare();
+	// create a new slect square
+	HasMove();
+    
+}
 bool Checkers::IsValidSelection() {
 	int player_road;
 	checkerPiece ennemi;
@@ -419,11 +585,28 @@ bool Checkers::IsValidSelection() {
 	if (curretPlayer == 0) { // PlayerOne set
         player_road=1;
         ennemi= PIECE_PLAYER_TWO;
-        current_piece =PIECE_PLAYER_ONE;
+        //if(boardData[selectedCol][selectedRow].isCrowd)  //boardData[selections[selectionTotal-1].col][selections[selectionTotal-1].row].isCrowd
+        if( (selectionTotal == 0 && boardData[selectedCol][selectedRow].isCrowd) || (selectionTotal != 0 && boardData[selections[selectionTotal-1].col][selections[selectionTotal-1].row].isCrowd))
+        {
+           current_piece = PIECE_PLAYER_ONE_KING;
+           sprintf(debugMessage,"cur: ONE_KING");
+        }
+        else{   
+           current_piece =PIECE_PLAYER_ONE;
+           sprintf(debugMessage,"cur: PLAYER_ONE");
+       }
 	}else{
 		player_road=-1;
         ennemi= PIECE_PLAYER_ONE;
-        current_piece =PIECE_PLAYER_TWO;
+        //if(boardData[selectedCol][selectedRow].isCrowd){
+        if((selectionTotal == 0 && boardData[selectedCol][selectedRow].isCrowd) || (selectionTotal != 0 && boardData[selections[selectionTotal-1].col][selections[selectionTotal-1].row].isCrowd)){
+           current_piece = PIECE_PLAYER_TWO_KING;
+           sprintf(debugMessage,"cur: TWO_KING");
+        }
+        else{   
+           current_piece =PIECE_PLAYER_TWO;
+           sprintf(debugMessage,"cur: PLAYER_TWO");
+       }
 	} 
 	if (selectionTotal == 0) { // first selection
 		if (boardData[selectedCol][selectedRow].piece == current_piece) { // current player's piece
@@ -436,12 +619,20 @@ bool Checkers::IsValidSelection() {
        // second or more move
 		//check for undo
 	    //sprintf(debugMessage,"Debug: ST: %d, moveS: %d",selectionTotal,boardData[selectedCol][selectedRow].moveSelection);
-		if (boardData[selectedCol][selectedRow].moveSelection == selectionTotal && LOCK_JMP == false) {
-			    sprintf(debugMessage,"undo");
+		if (boardData[selectedCol][selectedRow].moveSelection == selectionTotal && LOCK_JMP == false && possibleSelectTotal == 0) {
+			    //sprintf(debugMessage,"undo");
 				return true;	
 		}
+		if ( boardData[selectedCol][selectedRow].piece == current_piece && selectionTotal == 1 && LOCK_JMP == false && possibleSelectTotal > 0) {
+			if(( boardData[selectedCol][selectedRow].col != selections[selectionTotal-1].col || boardData[selectedCol][selectedRow].row != selections[selectionTotal-1].row)  && CanSimplyMove()){
+				sprintf(debugMessage,"reclick");
+				UpdateNewSelection();
+
+			}else
+			   sprintf(debugMessage,"the same");
+		}
 		if(boardData[selectedCol][selectedRow].piece == PIECE_NONE) { // available landing
-			if(AvailableFromMove()) {
+			if(AvailableFromMove(selections[selectionTotal-1].col, selections[selectionTotal-1].row, current_piece)) {
 				//sprintf(debugMessage,"simple move square, and pass he hand"); 
 				Make_move(selections[selectionTotal-1].col,selections[selectionTotal-1].row,selectedCol,selectedRow,current_piece);
 				Remove_trace(selections[selectionTotal-1].col,selections[selectionTotal-1].row,selectedCol,selectedRow);
@@ -449,7 +640,7 @@ bool Checkers::IsValidSelection() {
 				//return true;
 			}
 			if(AvailableFromPreviousJump() ){
-				sprintf(debugMessage, "Ilyes: %d, Zak: %d",NB_PIECE_PLAYER_ONE,NB_PIECE_PLAYER_TWO);
+				//sprintf(debugMessage, "Ilyes: %d, Zak: %d",NB_PIECE_PLAYER_ONE,NB_PIECE_PLAYER_TWO);
 				Make_move(selections[selectionTotal-1].col,selections[selectionTotal-1].row,selectedCol,selectedRow,current_piece);
                 //selectionTotal++;
                 //selections[selectionTotal-1].col=selectedCol;
@@ -487,22 +678,44 @@ void Checkers::Remove_trace(int prev_colm, int prev_row, int selectedCol, int se
   sceRtcGetCurrentTick( &lastSelection );
 }
 
+// remove any selected squares
+void Checkers::DelPreviousSelectedSquare(){
+   // del any possible previous selected square
+  if(possibleSelectTotal > 0){
+  	for(int i=0;i<possibleSelectTotal;i++){
+  		boardData[possibleSelections[i].col][possibleSelections[i].row].moveSelection = -1;
+  	    sceRtcGetCurrentTick( &lastSelection );
+  	}
+  	possibleSelectTotal=0;
+  }
+}
+
 //move a piece
 void Checkers::Make_move(int prev_colm, int prev_row, int selectedCol, int selectedRow, checkerPiece piece){
   // verify if piece become crown
   if (selectedCol == 0 || selectedCol == 7){
-  	if (selectedCol == 7 && piece == PIECE_PLAYER_ONE)
+  	 if (selectedCol == 7 && piece == PIECE_PLAYER_ONE){
   		boardData[selectedCol][selectedRow].piece = PIECE_PLAYER_ONE_KING;
-  	if (selectedCol == 0 && piece == PIECE_PLAYER_TWO)
+  	    boardData[selectedCol][selectedRow].isCrowd=true;
+  	 }
+  	 if (selectedCol == 0 && piece == PIECE_PLAYER_TWO){
   		boardData[selectedCol][selectedRow].piece = PIECE_PLAYER_TWO_KING;
+  	    boardData[selectedCol][selectedRow].isCrowd=true;
+  	 }
+  	 if(boardData[prev_colm][prev_row].isCrowd){
+  	 	boardData[selectedCol][selectedRow].piece= piece;
+  	 	boardData[selectedCol][selectedRow].isCrowd=true;
+  	 }
   }else
   {
-    boardData[selectedCol][selectedRow].piece= piece;	
+    boardData[selectedCol][selectedRow].piece= piece;
+    boardData[selectedCol][selectedRow].isCrowd = boardData[prev_colm][prev_row].isCrowd;	
   }
   //previous del piece
   boardData[prev_colm][prev_row].piece= PIECE_NONE;
-  
-
+  boardData[prev_colm][prev_row].isCrowd=false;
+  DelPreviousSelectedSquare();
+  sprintf(debugMessage,"move");
 }
 
 void Checkers::HandleInput(SceCtrlData &pad) {
