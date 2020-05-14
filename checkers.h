@@ -39,6 +39,12 @@ struct loc {
 	signed int col;
 };
 
+struct loc2 {
+	signed int row;
+	signed int col;
+	bool behindObs=false;
+};
+
 struct boardSquare {
 	int row; // row 0 is player one's first row
 	int col; // col 0 is the left side of a northern facing board
@@ -83,7 +89,7 @@ private:
 	loc selections[32];
 
 	int possibleSelectTotal;
-    loc possibleSelections[32];
+    loc2 possibleSelections[32];
 	
 	bool playersTurn;
 	

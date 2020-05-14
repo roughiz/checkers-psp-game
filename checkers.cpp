@@ -276,15 +276,16 @@ void Checkers::CanBeMovedToSelectedSquare(int col, int row){
 
 bool Checkers::CanSimplyMove() {
 	int player_road;
-	checkerPiece ennemi;
+	checkerPiece ennemi,ennemi2;
 	if (curretPlayer == 0) { // PlayerOne set
         player_road=1;
         ennemi= PIECE_PLAYER_TWO;
+        ennemi2= PIECE_PLAYER_TWO_KING;
 	}else{
 		player_road=-1;
         ennemi= PIECE_PLAYER_ONE;
+        ennemi2= PIECE_PLAYER_ONE_KING;
 	} 
-
 	// verify the case when the piece is crown
 	if(boardData[selectedCol][selectedRow].isCrowd){
 	  // verify any left and up move 
@@ -294,7 +295,10 @@ bool Checkers::CanSimplyMove() {
       		break;
 	    if (GetSquare(i, j) == PIECE_NONE) { // up and left
             return true;
-	    }else
+	    }else if( (GetSquare(i, j) == ennemi || GetSquare(i, j) == ennemi2) && ( i-1 >= 0 && j-1 >= 0 &&  GetSquare(i-1, j-1) == PIECE_NONE)){
+	    	return true;
+	    }
+	    else
 	        break;
 	    --j;    
 	  }
@@ -303,9 +307,12 @@ bool Checkers::CanSimplyMove() {
       for(int i=selectedCol-1;i>=0;i--){
       	if(j>7)
       		break;
-	    if (GetSquare(i, j) == PIECE_NONE) { // up and left
+	    if (GetSquare(i, j) == PIECE_NONE) { 
             return true;
-	    }else
+	    }else if( (GetSquare(i, j) == ennemi || GetSquare(i, j) == ennemi2) && ( i-1 >= 0 && j+1 <= 7 &&  GetSquare(i-1, j+1) == PIECE_NONE)){
+	    	return true;
+	    }
+	    else
 	        break;
 	    ++j;    
 	  }
@@ -314,9 +321,12 @@ bool Checkers::CanSimplyMove() {
       for(int i=selectedCol+1;i<=7;i++){
       	if(j<0)
       		break;
-	    if (GetSquare(i, j) == PIECE_NONE) { // up and left
+	    if (GetSquare(i, j) == PIECE_NONE) { 
             return true;
-	    }else
+	    }else if( (GetSquare(i, j) == ennemi || GetSquare(i, j) == ennemi2) && ( i+1 <= 7 && j-1 >= 0 &&  GetSquare(i+1, j-1) == PIECE_NONE)){
+	    	return true;
+	    }
+	    else
 	        break;
 	    --j;    
 	  }
@@ -327,12 +337,16 @@ bool Checkers::CanSimplyMove() {
       		break;
 	    if (GetSquare(i, j) == PIECE_NONE) { // up and left
             return true;
-	    }else
+	    }else if( (GetSquare(i, j) == ennemi || GetSquare(i, j) == ennemi2) && ( i+1 <= 7 && j+1 <= 7 &&  GetSquare(i+1, j+1) == PIECE_NONE)){
+	    	return true;
+	    }
+	    else
 	        break;
 	    ++j;    
 	  }
 
     }
+
     //basic moves
 	if (GetSquare(selectedCol+(1*player_road), selectedRow-1) == PIECE_NONE) { // up and left
         return true;
@@ -342,14 +356,14 @@ bool Checkers::CanSimplyMove() {
 	}
 	
 	//skip moves
-	if (GetSquare(selectedCol+(1*player_road), selectedRow-1) == ennemi) { // possible up and left skip
+	if (GetSquare(selectedCol+(1*player_road), selectedRow-1) == ennemi || GetSquare(selectedCol+(1*player_road), selectedRow-1) == ennemi2) { // possible up and left skip
 		if (GetSquare(selectedCol+(2*player_road), selectedRow-2) == PIECE_NONE) { // empty place after skip
-		  return true;
+		return true;
 		}
 	}
-	if (GetSquare(selectedCol+(1*player_road), selectedRow+1) == ennemi) { // possible up and right skip
+	if (GetSquare(selectedCol+(1*player_road), selectedRow+1) == ennemi || GetSquare(selectedCol+(1*player_road), selectedRow+1) == ennemi2) { // possible up and right skip
 		if (GetSquare(selectedCol+(2*player_road), selectedRow+2) == PIECE_NONE) { // empty place after skip
-		  return true;
+		return true;
 		}
 	}
 	return false;
@@ -357,13 +371,15 @@ bool Checkers::CanSimplyMove() {
 
 bool Checkers::HasMove() {
 	int player_road, can_move=0;
-	checkerPiece ennemi;
+	checkerPiece ennemi,ennemi2;
 	if (curretPlayer == 0) { // PlayerOne set
         player_road=1;
         ennemi= PIECE_PLAYER_TWO;
+        ennemi2= PIECE_PLAYER_TWO_KING;
 	}else{
 		player_road=-1;
         ennemi= PIECE_PLAYER_ONE;
+        ennemi2= PIECE_PLAYER_ONE_KING;
 	} 
 	// verify the case when the piece is crown
 	if(boardData[selectedCol][selectedRow].isCrowd){
@@ -373,9 +389,18 @@ bool Checkers::HasMove() {
       	if(j<0)
       		break;
 	    if (GetSquare(i, j) == PIECE_NONE) { // up and left
-            CanBeMovedToSelectedSquare(i,j);
+	    	if(possibleSelectTotal> 0 && possibleSelections[possibleSelectTotal-1].col == i && possibleSelections[possibleSelectTotal-1].row == j)
+	    		can_move++;
+	    	else{
+            	CanBeMovedToSelectedSquare(i,j);
+            	can_move++;
+            }	
+	    }else if( (GetSquare(i, j) == ennemi || GetSquare(i, j) == ennemi2) && ( i-1 >= 0 && j-1 >= 0 &&  GetSquare(i-1, j-1) == PIECE_NONE)){
+	    	possibleSelections[possibleSelectTotal].behindObs = true;
+	    	CanBeMovedToSelectedSquare(i-1,j-1);
             can_move++;
-	    }else
+	    }
+	    else
 	        break;
 	    --j;    
 	  }
@@ -384,10 +409,19 @@ bool Checkers::HasMove() {
       for(int i=selectedCol-1;i>=0;i--){
       	if(j>7)
       		break;
-	    if (GetSquare(i, j) == PIECE_NONE) { // up and left
-            CanBeMovedToSelectedSquare(i,j);
+	    if (GetSquare(i, j) == PIECE_NONE) { 
+	    	if(possibleSelectTotal> 0 && possibleSelections[possibleSelectTotal-1].col == i && possibleSelections[possibleSelectTotal-1].row == j)
+	    		can_move++;
+	    	else{ 
+            	CanBeMovedToSelectedSquare(i,j);
+            	can_move++;
+            }
+	    }else if( (GetSquare(i, j) == ennemi || GetSquare(i, j) == ennemi2) && ( i-1 >= 0 && j+1 <= 7 &&  GetSquare(i-1, j+1) == PIECE_NONE)){
+	    	possibleSelections[possibleSelectTotal].behindObs = true;
+	    	CanBeMovedToSelectedSquare(i-1,j+1);
             can_move++;
-	    }else
+	    }
+	    else
 	        break;
 	    ++j;    
 	  }
@@ -396,10 +430,19 @@ bool Checkers::HasMove() {
       for(int i=selectedCol+1;i<=7;i++){
       	if(j<0)
       		break;
-	    if (GetSquare(i, j) == PIECE_NONE) { // up and left
-            CanBeMovedToSelectedSquare(i,j);
+	    if (GetSquare(i, j) == PIECE_NONE) { 
+	    	if(possibleSelectTotal> 0 && possibleSelections[possibleSelectTotal-1].col == i && possibleSelections[possibleSelectTotal-1].row == j)
+	    		can_move++;
+	    	else{
+            	CanBeMovedToSelectedSquare(i,j);
+            	can_move++;
+            }
+	    }else if( (GetSquare(i, j) == ennemi || GetSquare(i, j) == ennemi2) && ( i+1 <= 7 && j-1 >= 0 &&  GetSquare(i+1, j-1) == PIECE_NONE)){
+	    	possibleSelections[possibleSelectTotal].behindObs = true;
+	    	CanBeMovedToSelectedSquare(i+1,j-1);
             can_move++;
-	    }else
+	    }
+	    else
 	        break;
 	    --j;    
 	  }
@@ -409,36 +452,46 @@ bool Checkers::HasMove() {
       	if(j>7)
       		break;
 	    if (GetSquare(i, j) == PIECE_NONE) { // up and left
-            CanBeMovedToSelectedSquare(i,j);
+	    	if(possibleSelectTotal> 0 && possibleSelections[possibleSelectTotal-1].col == i && possibleSelections[possibleSelectTotal-1].row == j)
+	    		can_move++;
+            else{
+            	CanBeMovedToSelectedSquare(i,j);
+            	can_move++;
+        	}
+	    }else if( (GetSquare(i, j) == ennemi || GetSquare(i, j) == ennemi2) && ( i+1 <= 7 && j+1 <= 7 &&  GetSquare(i+1, j+1) == PIECE_NONE)){
+	    	possibleSelections[possibleSelectTotal].behindObs = true;
+	    	CanBeMovedToSelectedSquare(i+1,j+1);
             can_move++;
-	    }else
+	    }
+	    else
 	        break;
 	    ++j;    
 	  }
 
-    }
+    }else{
 
-    //basic moves
-	if (GetSquare(selectedCol+(1*player_road), selectedRow-1) == PIECE_NONE) { // up and left
-        CanBeMovedToSelectedSquare(selectedCol+(1*player_road), selectedRow-1);
-        can_move++;
-	}
-	if (GetSquare(selectedCol+(1*player_road), selectedRow+1) == PIECE_NONE) { // up and right
-		CanBeMovedToSelectedSquare(selectedCol+(1*player_road), selectedRow+1);
-        can_move++;
-	}
-	
-	//skip moves
-	if (GetSquare(selectedCol+(1*player_road), selectedRow-1) == ennemi) { // possible up and left skip
-		if (GetSquare(selectedCol+(2*player_road), selectedRow-2) == PIECE_NONE) { // empty place after skip
-		CanBeMovedToSelectedSquare(selectedCol+(2*player_road),selectedRow-2);
-        can_move++;
+    	//basic moves
+		if (GetSquare(selectedCol+(1*player_road), selectedRow-1) == PIECE_NONE) { // up and left
+        	CanBeMovedToSelectedSquare(selectedCol+(1*player_road), selectedRow-1);
+        	can_move++;
 		}
-	}
-	if (GetSquare(selectedCol+(1*player_road), selectedRow+1) == ennemi) { // possible up and right skip
-		if (GetSquare(selectedCol+(2*player_road), selectedRow+2) == PIECE_NONE) { // empty place after skip
-		CanBeMovedToSelectedSquare(selectedCol+(2*player_road),selectedRow+2);
-        can_move++;
+		if (GetSquare(selectedCol+(1*player_road), selectedRow+1) == PIECE_NONE) { // up and right
+			CanBeMovedToSelectedSquare(selectedCol+(1*player_road), selectedRow+1);
+        	can_move++;
+		}
+	
+		//skip moves
+		if (GetSquare(selectedCol+(1*player_road), selectedRow-1) == ennemi || GetSquare(selectedCol+(1*player_road), selectedRow-1) == ennemi2) { // possible up and left skip
+			if (GetSquare(selectedCol+(2*player_road), selectedRow-2) == PIECE_NONE) { // empty place after skip
+				CanBeMovedToSelectedSquare(selectedCol+(2*player_road),selectedRow-2);
+       	 		can_move++;
+			}
+		}
+		if (GetSquare(selectedCol+(1*player_road), selectedRow+1) == ennemi || GetSquare(selectedCol+(1*player_road), selectedRow+1) == ennemi2) { // possible up and right skip
+			if (GetSquare(selectedCol+(2*player_road), selectedRow+2) == PIECE_NONE) { // empty place after skip
+			CanBeMovedToSelectedSquare(selectedCol+(2*player_road),selectedRow+2);
+        	can_move++;
+			}
 		}
 	}
 	if(can_move> 0)
@@ -513,8 +566,14 @@ bool Checkers::AvailableFromMove(int pcol, int prow, checkerPiece current_piece)
 		// check special crown move
         if(boardData[pcol][prow].isCrowd){
         	for (int i=0;i<possibleSelectTotal;i++){
-        		if ( selectedCol == possibleSelections[i].col && selectedRow == possibleSelections[i].row)
-        			return true;
+        		if ( selectedCol == possibleSelections[i].col && selectedRow == possibleSelections[i].row){
+        			if (possibleSelections[i].behindObs == false)
+        			    return true;
+                    else{
+                    	sprintf(playerOneName,"Behind, i: %d",i);
+                    	return false;
+                    }
+                }    
             }
             return false;
         }
@@ -580,32 +639,34 @@ void Checkers::UpdateNewSelection(){
 }
 bool Checkers::IsValidSelection() {
 	int player_road;
-	checkerPiece ennemi;
-	checkerPiece current_piece;
+	checkerPiece ennemi,ennemi2;
+	checkerPiece current_piece,current_piece2;
 	if (curretPlayer == 0) { // PlayerOne set
         player_road=1;
         ennemi= PIECE_PLAYER_TWO;
+        ennemi2= PIECE_PLAYER_TWO_KING;
         //if(boardData[selectedCol][selectedRow].isCrowd)  //boardData[selections[selectionTotal-1].col][selections[selectionTotal-1].row].isCrowd
         if( (selectionTotal == 0 && boardData[selectedCol][selectedRow].isCrowd) || (selectionTotal != 0 && boardData[selections[selectionTotal-1].col][selections[selectionTotal-1].row].isCrowd))
         {
            current_piece = PIECE_PLAYER_ONE_KING;
-           sprintf(debugMessage,"cur: ONE_KING");
+           current_piece2 = PIECE_PLAYER_ONE;
         }
         else{   
            current_piece =PIECE_PLAYER_ONE;
-           sprintf(debugMessage,"cur: PLAYER_ONE");
+           current_piece2 = PIECE_PLAYER_ONE_KING;
        }
 	}else{
 		player_road=-1;
         ennemi= PIECE_PLAYER_ONE;
+        ennemi2= PIECE_PLAYER_ONE_KING;
         //if(boardData[selectedCol][selectedRow].isCrowd){
         if((selectionTotal == 0 && boardData[selectedCol][selectedRow].isCrowd) || (selectionTotal != 0 && boardData[selections[selectionTotal-1].col][selections[selectionTotal-1].row].isCrowd)){
            current_piece = PIECE_PLAYER_TWO_KING;
-           sprintf(debugMessage,"cur: TWO_KING");
+           current_piece2 = PIECE_PLAYER_TWO;
         }
         else{   
-           current_piece =PIECE_PLAYER_TWO;
-           sprintf(debugMessage,"cur: PLAYER_TWO");
+           current_piece = PIECE_PLAYER_TWO;
+           current_piece2 = PIECE_PLAYER_TWO_KING; 
        }
 	} 
 	if (selectionTotal == 0) { // first selection
@@ -623,7 +684,7 @@ bool Checkers::IsValidSelection() {
 			    //sprintf(debugMessage,"undo");
 				return true;	
 		}
-		if ( boardData[selectedCol][selectedRow].piece == current_piece && selectionTotal == 1 && LOCK_JMP == false && possibleSelectTotal > 0) {
+		if ( (boardData[selectedCol][selectedRow].piece == current_piece || boardData[selectedCol][selectedRow].piece == current_piece2 ) && selectionTotal == 1 && LOCK_JMP == false && possibleSelectTotal > 0) {
 			if(( boardData[selectedCol][selectedRow].col != selections[selectionTotal-1].col || boardData[selectedCol][selectedRow].row != selections[selectionTotal-1].row)  && CanSimplyMove()){
 				sprintf(debugMessage,"reclick");
 				UpdateNewSelection();
@@ -684,6 +745,7 @@ void Checkers::DelPreviousSelectedSquare(){
   if(possibleSelectTotal > 0){
   	for(int i=0;i<possibleSelectTotal;i++){
   		boardData[possibleSelections[i].col][possibleSelections[i].row].moveSelection = -1;
+  		possibleSelections[i].behindObs = false;
   	    sceRtcGetCurrentTick( &lastSelection );
   	}
   	possibleSelectTotal=0;
